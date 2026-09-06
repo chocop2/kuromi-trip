@@ -90,11 +90,11 @@
 
 ```
 kuromi-trip/
-├── index.html              ← 사이트 첫 화면 (앱으로 연결)
-├── Emily_Travel.html       ← 플래너 본체
-└── 여행 앱 만들기/
-    ├── Emily_Travel.html   ← 작업본
-    └── 쿠로미.webp          ← 로고 이미지
+├── index.html          ← 사이트 첫 화면 (없으면 루트 URL이 404)
+├── Emily_Travel.html   ← 플래너 본체
+├── kuromi.webp         ← 쿠로미 로고
+├── README.md           ← 이 문서 (사이트에는 안 쓰임)
+└── .gitignore          ← 키·노트북이 실수로 올라가는 것 방지
 ```
 
 **기술** · 순수 HTML/CSS/JavaScript 한 파일. 빌드 도구도, 프레임워크도 없어요.
