@@ -61,15 +61,34 @@
         
         .container { width: 90%; max-width: 600px; margin: 20px 0; }
         
+        .map-wrap {
+            position: sticky;
+            top: 8px;
+            z-index: 10;
+            background-color: var(--bg-color);
+            padding: 8px 0;
+            margin-bottom: 12px;
+        }
         .map-box {
             width: 100%;
-            height: 250px;
+            height: min(250px, 38vh);
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(171, 71, 188, 0.2);
             border: 3px solid #992bae;
-            margin-bottom: 20px;
             background-color: white;
+        }
+        .map-status {
+            margin-top: 6px;
+            background: white;
+            border: 2px solid #f8bbd0;
+            border-radius: 12px;
+            padding: 7px 12px;
+            font-size: 0.85rem;
+            color: var(--dark-color);
+            text-align: center;
+            min-height: 34px;
+            display: flex; align-items: center; justify-content: center;
         }
         .map-box iframe {
             width: 100%;
@@ -92,6 +111,9 @@
         .btn { background-color: #e1bee7; color: var(--dark-color); border: none; padding: 8px 12px; border-radius: 10px; font-family: 'Jua', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; }
         .btn-map { background-color: #d1c4e9; color: #311b92; }
         .btn-route { background-color: #f8bbd0; color: #880e4f; }
+        .btn-app { background-color: #c5cae9; color: #1a237e; }
+        .btn.busy { opacity: 0.55; pointer-events: none; }
+        .btn:focus-visible { outline: 3px solid var(--primary-color); outline-offset: 2px; }
         
         .share-box { background: white; padding: 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .share-box button { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 15px; font-family: 'Jua', sans-serif; font-size: 1rem; cursor: pointer; margin-top: 10px; }
@@ -111,17 +133,20 @@
     </header>
     
     <div class="container">
-        <!-- 구글 맵 화면 -->
-        <div class="map-box">
-            <iframe id="mapFrame" src="https://maps.google.com/maps?q=Kota+Kinabalu&z=13&output=embed" allowfullscreen></iframe>
+        <!-- 구글 맵 화면 (스크롤해도 따라옴) -->
+        <div class="map-wrap" id="mapWrap">
+            <div class="map-box">
+                <iframe id="mapFrame" title="지도" src="https://maps.google.com/maps?q=Kota+Kinabalu&z=13&output=embed" allowfullscreen></iframe>
+            </div>
+            <div class="map-status" id="mapStatus">📍 코타키나발루 &nbsp;·&nbsp; 아래 카드를 누르면 여기 지도가 움직여요</div>
         </div>
 
         <div class="nav-buttons">
-            <button class="tab-btn active" onclick="filterCategory('all')">전체 보기</button>
-            <button class="tab-btn" onclick="filterCategory('spot')">관광지</button>
-            <button class="tab-btn" onclick="filterCategory('food')">맛집</button>
-            <button class="tab-btn" onclick="filterCategory('cafe')">카페</button>
-            <button class="tab-btn" onclick="filterCategory('theme')">테마/액티비티</button>
+            <button class="tab-btn active" onclick="filterCategory('all', this)">전체 보기</button>
+            <button class="tab-btn" onclick="filterCategory('spot', this)">관광지</button>
+            <button class="tab-btn" onclick="filterCategory('food', this)">맛집</button>
+            <button class="tab-btn" onclick="filterCategory('cafe', this)">카페</button>
+            <button class="tab-btn" onclick="filterCategory('theme', this)">테마/액티비티</button>
         </div>
         
         <div id="list-container" class="card-list"></div>
@@ -160,48 +185,105 @@
             { name: "반딧불 투어", category: "theme", desc: "반짝이는 반딧불이를 만나는 신비로운 투어", query: "Firefly tour Kota Kinabalu" }
         ];
 
+        const $map    = () => document.getElementById('mapFrame');
+        const $status = () => document.getElementById('mapStatus');
+
+        function setStatus(html) { $status().innerHTML = html; }
+
+        // 지도가 화면 밖으로 밀렸을 때만 끌어올린다 (평소엔 sticky라 이미 보임)
+        function focusMap() {
+            const wrap = document.getElementById('mapWrap');
+            const top = wrap.getBoundingClientRect().top;
+            if (top < 0 || top > window.innerHeight * 0.6) {
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                wrap.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+            }
+        }
+
+        // 카드 클릭 — 페이지 안 지도에 장소 표시
+        function showPlace(place) {
+            $map().src = `https://maps.google.com/maps?q=${encodeURIComponent(place.query)}&z=15&output=embed`;
+            setStatus(`📍 <b>${place.name}</b>`);
+            focusMap();
+        }
+
+        // 길찾기 버튼 — 내 위치에서 목적지까지 경로를 페이지 안 지도에 그린다
+        function routeToPlace(place, btn) {
+            if (!navigator.geolocation) {
+                setStatus(`⚠️ 이 브라우저는 위치를 못 써요. <b>앱</b> 버튼을 눌러주세요`);
+                return;
+            }
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 확인중';
+            btn.classList.add('busy');
+            setStatus('📡 내 위치를 확인하는 중…');
+
+            const restore = () => { btn.innerHTML = original; btn.classList.remove('busy'); };
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const me = `${pos.coords.latitude},${pos.coords.longitude}`;
+                    $map().src = `https://maps.google.com/maps?saddr=${encodeURIComponent(me)}`
+                               + `&daddr=${encodeURIComponent(place.query)}&output=embed`;
+                    setStatus(`🧭 내 위치 → <b>${place.name}</b>`);
+                    focusMap();
+                    restore();
+                },
+                err => {
+                    const why = err.code === 1 ? '위치 권한이 거부됐어요'
+                              : err.code === 3 ? '위치 확인이 너무 오래 걸려요'
+                              : '위치를 못 가져왔어요';
+                    setStatus(`⚠️ ${why} — 대신 <b>${place.name}</b> 위치를 보여줄게요`);
+                    $map().src = `https://maps.google.com/maps?q=${encodeURIComponent(place.query)}&z=15&output=embed`;
+                    focusMap();
+                    restore();
+                },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+            );
+        }
+
         function renderPlaces(filter) {
             const container = document.getElementById('list-container');
             container.innerHTML = '';
             const filtered = filter === 'all' ? places : places.filter(p => p.category === filter);
-            
+
             filtered.forEach(place => {
                 const card = document.createElement('div');
                 card.className = 'place-card';
-                
-                card.onclick = () => {
-                    updateMap(place.query);
-                };
+                card.onclick = () => showPlace(place);
 
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.query)}`;
-                const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.query)}`;
-                
-                card.innerHTML = `
-                    <div class="place-info">
-                        <h3>${place.name}</h3>
-                        <p>${place.desc}</p>
-                    </div>
-                    <div class="actions" onclick="event.stopPropagation()">
-                        <a href="${mapUrl}" target="_blank" class="btn btn-map" title="구글 맵 보기">
-                            <i class="fa-solid fa-map-location-dot"></i> 지도
-                        </a>
-                        <a href="${routeUrl}" target="_blank" class="btn btn-route" title="내 위치에서 길찾기">
-                            <i class="fa-solid fa-route"></i> 길찾기
-                        </a>
-                    </div>
-                `;
+                const info = document.createElement('div');
+                info.className = 'place-info';
+                info.innerHTML = `<h3>${place.name}</h3><p>${place.desc}</p>`;
+
+                const actions = document.createElement('div');
+                actions.className = 'actions';
+                actions.onclick = e => e.stopPropagation();
+
+                const routeBtn = document.createElement('button');
+                routeBtn.className = 'btn btn-route';
+                routeBtn.type = 'button';
+                routeBtn.title = '내 위치에서 여기까지 경로를 위 지도에 표시';
+                routeBtn.innerHTML = '<i class="fa-solid fa-route"></i> 길찾기';
+                routeBtn.onclick = () => routeToPlace(place, routeBtn);
+
+                const appLink = document.createElement('a');
+                appLink.className = 'btn btn-app';
+                appLink.target = '_blank';
+                appLink.rel = 'noopener';
+                appLink.title = '구글 지도 앱에서 실시간 내비게이션 시작';
+                appLink.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.query)}`;
+                appLink.innerHTML = '<i class="fa-solid fa-location-arrow"></i> 앱';
+
+                actions.append(routeBtn, appLink);
+                card.append(info, actions);
                 container.appendChild(card);
             });
         }
 
-        function updateMap(query) {
-            const mapFrame = document.getElementById('mapFrame');
-            mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-        }
-
-        function filterCategory(category) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+        function filterCategory(category, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             renderPlaces(category);
         }
 
