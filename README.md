@@ -1,7 +1,7 @@
 <table>
 <tr>
 <td width="170" align="center" valign="middle">
-  <img src="여행%20앱%20만들기/쿠로미.webp" width="150" alt="쿠로미">
+  <img src="kuromi.webp" width="150" alt="쿠로미">
 </td>
 <td valign="middle">
   <h1>🖤 쿠로미의 코타키나발루 💜</h1>

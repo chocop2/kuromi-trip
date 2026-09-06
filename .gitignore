@@ -1,0 +1,20 @@
+# ── 절대 공개되면 안 되는 것 ──
+.env
+.env.*
+*.key
+*.pem
+*credential*
+*secret*
+service-account*.json
+
+# ── 노트북 (API 키가 들어가기 쉬움) ──
+*.ipynb
+.ipynb_checkpoints/
+
+# ── 이 레포와 무관한 다른 프로젝트 ──
+keti-wattwise-2026/
+
+# ── OS / 에디터 ──
+.DS_Store
+.vscode/
+.idea/
