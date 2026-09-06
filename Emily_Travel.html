@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쿠로미의 코타키나발루 여행 플래너 🖤💜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #fadce7;
+            --primary-color: #992bae;
+            --dark-color: #4a148c;
+            --card-bg: #ffffff;
+            --text-color: #262626;
+            --accent-pink: #f48fb1;
+        }
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background: linear-gradient(135deg, #ba68c8, #f06292);
+            color: white;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        header h1 { margin: 0; font-size: 1.8rem; text-shadow: 2px 2px #4a148c; color: #ffffff; }
+        header p { margin: 5px 0 0; font-size: 0.95rem; color: #ffffff; }
+        
+        .container { width: 90%; max-width: 600px; margin: 20px 0; }
+        
+        .map-box {
+            width: 100%;
+            height: 250px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(171, 71, 188, 0.2);
+            border: 3px solid #992bae;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+        .map-box iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .nav-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .tab-btn { background-color: white; color: var(--primary-color); border: 2px solid var(--primary-color); padding: 8px 14px; border-radius: 20px; font-family: 'Jua', sans-serif; font-size: 0.9rem; cursor: pointer; }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--primary-color); color: white; }
+        
+        .card-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+        .place-card { background-color: var(--card-bg); border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(171, 71, 188, 0.15); display: flex; justify-content: space-between; align-items: center; border: 2px dashed #f8bbd0; cursor: pointer; transition: 0.2s; }
+        .place-card:hover { transform: translateY(-3px); background-color: #f3e5f5; }
+        
+        .place-info h3 { margin: 0 0 5px; font-size: 1.1rem; color: var(--dark-color); }
+        .place-info p { margin: 0; font-size: 0.85rem; color: #777; }
+        
+        .actions { display: flex; gap: 8px; }
+        .btn { background-color: #e1bee7; color: var(--dark-color); border: none; padding: 8px 12px; border-radius: 10px; font-family: 'Jua', sans-serif; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn-map { background-color: #d1c4e9; color: #311b92; }
+        .btn-route { background-color: #f8bbd0; color: #880e4f; }
+        
+        .share-box { background: white; padding: 15px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .share-box button { background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 15px; font-family: 'Jua', sans-serif; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        footer { text-align: center; font-size: 0.8rem; color: #757575; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🖤 쿠로미의 코타키나발루 💜</h1>
+        <p>인앱 지도 보기 & 내 위치 경로 탐색 플래너!</p>
+    </header>
+    
+    <div class="container">
+        <!-- 구글 맵 화면 (API 키를 key= 뒤에 넣어주세요) -->
+        <div class="map-box">
+            <iframe id="mapFrame" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD5UxhL1xNHgzHZ_h17blZy9uLwkRHkBWs&q=Kota+Kinabalu" allowfullscreen></iframe>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="tab-btn active" onclick="filterCategory('all')">전체 보기</button>
+            <button class="tab-btn" onclick="filterCategory('spot')">관광지</button>
+            <button class="tab-btn" onclick="filterCategory('food')">맛집</button>
+            <button class="tab-btn" onclick="filterCategory('cafe')">카페</button>
+            <button class="tab-btn" onclick="filterCategory('theme')">테마/액티비티</button>
+        </div>
+        
+        <div id="list-container" class="card-list"></div>
+        
+        <div class="share-box">
+            <h3>💌 친구에게 이 앱 공유하기</h3>
+            <p style="font-size: 0.85rem; color: #666;">링크를 복사해서 친구에게 코타키나발루 일정을 공유해보세요!</p>
+            <button onclick="shareApp()"><i class="fa-solid fa-share-nodes"></i> 링크 복사하기</button>
+        </div>
+    </div>
+    
+    <footer><p>Made with 💜 by Kuromi Fan</p></footer>
+
+    <script>
+        const places = [
+            { name: "이마고 쇼핑몰", category: "spot", desc: "코타키나발루 대표 대형 쇼핑몰", query: "Imago Shopping Mall Kota Kinabalu" },
+            { name: "수이라 사바", category: "spot", desc: "오션뷰가 멋진 복합 쇼핑몰", query: "Suria Sabah Shopping Mall" },
+            { name: "시그널힐 전망대", category: "spot", desc: "시내가 한눈에 내려다보이는 전망대", query: "Signal Hill Observatory Tower" },
+            { name: "마리마리 문화 마을", category: "spot", desc: "사바 전통문화를 체험할 수 있는 곳", query: "Mari Mari Cultural Village" },
+            { name: "사바 주립 박물관", category: "spot", desc: "사바의 역사와 문화를 담은 박물관", query: "Sabah State Museum" },
+            { name: "핑크모스크", category: "spot", desc: "인생샷 명소로 유명한 유니대학교 모스크", query: "Universiti Malaysia Sabah Mosque Pink Mosque" },
+            { name: "시티 모스크", category: "spot", desc: "아름다운 수상 사원 블루모스크", query: "Kota Kinabalu City Mosque" },
+            { name: "악어 농장", category: "spot", desc: "다양한 악어를 볼 수 있는 테마 농장", query: "Tuaran Crocodile Farm" },
+            { name: "Kee Hiong Bak Kut Teh", category: "food", desc: "현지인도 줄 서서 먹는 진한국물 바쿠테", query: "Kee Hiong Bak Kut Teh Kota Kinabalu" },
+            { name: "Wiya Chicken Rice", category: "food", desc: "겉바속촉 맛있는 치킨라이스 맛집", query: "Wiya Chicken Rice Kota Kinabalu" },
+            { name: "Welcome Seafood", category: "food", desc: "해산물을 직접 골라 먹는 웰컴 씨푸드", query: "Welcome Seafood Restaurant Kota Kinabalu" },
+            { name: "Ken Wan Hing", category: "food", desc: "로컬 맛집 및 카야토스트", query: "Kian Hin Restoran Kota Kinabalu" },
+            { name: "Yuit Cheong", category: "food", desc: "유서 깊은 전통 로컬 카페/식당", query: "Yuit Cheong Kota Kinabalu" },
+            { name: "Yee Fung Laksa", category: "food", desc: "새콤달콤 진한 국물의 락사 맛집", query: "Yee Fung Laksa Kota Kinabalu" },
+            { name: "October Coffee Gaya", category: "cafe", desc: "분위기 좋은 가야 거리의 커피숍", query: "October Coffee Gaya Kota Kinabalu" },
+            { name: "Woo!", category: "cafe", desc: "감성적인 인테리어와 브런치 카페", query: "Woo Cafe Kota Kinabalu" },
+            { name: "Kopi Ping Cafe", category: "cafe", desc: "로컬 커피와 디저트를 즐기는 곳", query: "Kopi Ping Cafe Kota Kinabalu" },
+            { name: "Brown Cafe Malaysia", category: "cafe", desc: "편안한 분위기의 카페", query: "Brown Cafe Malaysia Kota Kinabalu" },
+            { name: "Nook Cafe", category: "cafe", desc: "아기자기하고 예쁜 감성 카페", query: "Nook Cafe Kota Kinabalu" },
+            { name: "마사지 받기", category: "theme", desc: "여행의 피로를 풀어주는 힐링 마사지", query: "Spa and Massage Kota Kinabalu" },
+            { name: "반딧불 투어", category: "theme", desc: "반짝이는 반딧불이를 만나는 신비로운 투어", query: "Firefly tour Kota Kinabalu" }
+        ];
+
+        function renderPlaces(filter) {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            const filtered = filter === 'all' ? places : places.filter(p => p.category === filter);
+            
+            filtered.forEach(place => {
+                const card = document.createElement('div');
+                card.className = 'place-card';
+                
+                card.onclick = () => {
+                    updateMap(place.query);
+                };
+
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.query)}`;
+                const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.query)}`;
+                
+                card.innerHTML = `
+                    <div class="place-info">
+                        <h3>${place.name}</h3>
+                        <p>${place.desc}</p>
+                    </div>
+                    <div class="actions" onclick="event.stopPropagation()">
+                        <a href="${mapUrl}" target="_blank" class="btn btn-map" title="구글 맵 보기">
+                            <i class="fa-solid fa-map-location-dot"></i> 지도
+                        </a>
+                        <a href="${routeUrl}" target="_blank" class="btn btn-route" title="내 위치에서 길찾기">
+                            <i class="fa-solid fa-route"></i> 길찾기
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateMap(query) {
+            const mapFrame = document.getElementById('mapFrame');
+            mapFrame.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        }
+
+        function filterCategory(category) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderPlaces(category);
+        }
+
+        function shareApp() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('💜 앱 링크가 클립보드에 복사되었습니다! 친구에게 공유해보세요!');
+            });
+        }
+
+        renderPlaces('all');
+    </script>
+</body>
+</html>
