@@ -1,19 +1,20 @@
-<div align="center">
-
-<img src="여행 앱 만들기/쿠로미.webp" width="120" alt="쿠로미">
-
-# 🖤 쿠로미의 코타키나발루 💜
-
-**말레이시아 코타키나발루 여행 플래너**
-관광지 · 맛집 · 카페 · 테마까지 한 페이지에서, 지도랑 길찾기까지 바로.
-
-### 👉 **[앱 열러 가기](https://chocop2.github.io/kuromi-trip/)** 👈
-
-`https://chocop2.github.io/kuromi-trip/`
-
-설치 필요 없어요. 링크만 보내면 친구도 바로 볼 수 있어요 💌
-
-</div>
+<table>
+<tr>
+<td width="170" align="center" valign="middle">
+  <img src="여행%20앱%20만들기/쿠로미.webp" width="150" alt="쿠로미">
+</td>
+<td valign="middle">
+  <h1>🖤 쿠로미의 코타키나발루 💜</h1>
+  <b>말레이시아 코타키나발루 여행 플래너</b><br>
+  관광지 · 맛집 · 카페 · 테마까지 한 페이지에서, 지도랑 길찾기까지 바로.
+  <br><br>
+  <a href="https://chocop2.github.io/kuromi-trip/"><b>👉 앱 열러 가기 👈</b></a><br>
+  <code>https://chocop2.github.io/kuromi-trip/</code>
+  <br><br>
+  설치 필요 없어요. 링크만 보내면 친구도 바로 볼 수 있어요 💌
+</td>
+</tr>
+</table>
 
 ---
 
