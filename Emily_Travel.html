@@ -29,11 +29,26 @@
             background: linear-gradient(135deg, #ba68c8, #f06292);
             color: white;
             width: 100%;
-            padding: 20px 0;
+            padding: 25px 0 20px 0;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .kuromi-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            animation: bounce 2s infinite ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
         header h1 { margin: 0; font-size: 1.8rem; text-shadow: 2px 2px #4a148c; color: #ffffff; }
         header p { margin: 5px 0 0; font-size: 0.95rem; color: #ffffff; }
@@ -79,12 +94,14 @@
 </head>
 <body>
     <header>
+        <!-- 보내주신 쿠로미 이미지 적용 -->
+        <img src="https://raw.githubusercontent.com/chocop2/kuromi-trip/main/kuromi.png" alt="쿠로미 캐릭터" class="kuromi-logo" onerror="this.src='https://i.imgur.com/86n1ion.png'">
         <h1>🖤 쿠로미의 코타키나발루 💜</h1>
         <p>인앱 지도 보기 & 내 위치 경로 탐색 플래너!</p>
     </header>
     
     <div class="container">
-        <!-- 구글 맵 화면 (API 키를 key= 뒤에 넣어주세요) -->
+        <!-- 구글 맵 화면 -->
         <div class="map-box">
             <iframe id="mapFrame" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD5UxhL1xNHgzHZ_h17blZy9uLwkRHkBWs&q=Kota+Kinabalu" allowfullscreen></iframe>
         </div>
